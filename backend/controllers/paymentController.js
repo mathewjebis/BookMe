@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import User from '../models/User.js';
-import WalletTransaction from '../models/WalletTransaction.js';
+import WalletTransaction from '../models/walletTransaction.js';
 import Withdrawal from '../models/Withdrawal.js';
 import { getWalletSummary } from '../utils/wallet.js';
 

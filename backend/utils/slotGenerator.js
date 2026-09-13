@@ -1,6 +1,6 @@
 import Availability from "../models/Availability.js";
 import Booking from "../models/Booking.js";
-import { timeOverlap } from "../overlap.js";
+import { timeOverlap } from "./overlap.js";
 import { getDayOfWeek, minutesToTime, timeToMinutes } from "./time.js";
 
 export const generateSlots = async ({ userId, service, date }) => {

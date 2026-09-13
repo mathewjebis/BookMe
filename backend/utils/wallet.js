@@ -1,4 +1,4 @@
-import WalletTransaction from "../models/WalletTransaction.js";
+import WalletTransaction from '../models/walletTransaction.js';
 import Withdrawal from "../models/Withdrawal.js";
 
 export const createBookingPayoutTransaction = async ({
