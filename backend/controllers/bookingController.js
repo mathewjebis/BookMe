@@ -142,7 +142,7 @@ export const rescheduleBooking = async (req, res) => {
     });
 
     const hasConflict = conflictingBookings.some((candidate) => (
-      timesOverlap(startTime, endTime, candidate.startTime, candidate.endTime)
+      timeOverlap(startTime, endTime, candidate.startTime, candidate.endTime)
     ));
 
     if (hasConflict) {

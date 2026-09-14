@@ -17,6 +17,6 @@ router.get("/", auth, getPaymentOverview);
 router.patch("/payout-details", auth, updatePayoutDetails);
 
 // Request withdrawal
-router.post("/withdrawals", auth, requestWithdrawal);
+router.get('/withdrawals', auth, requestWithdrawal)
 
 export default router;

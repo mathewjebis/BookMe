@@ -67,7 +67,10 @@ export const updateService = async (req, res) => {
     const service = await Service.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id, isDeleted: { $ne: true } },
       updates,
-      { new: true },
+      {
+  new: true,
+  runValidators: true,
+},
     );
 
     if (!service) {

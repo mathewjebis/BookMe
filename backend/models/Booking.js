@@ -111,6 +111,11 @@ const bookingSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+bookingSchema.index({
+  providerId: 1,
+  startTime: 1,
+  endTime: 1,
+});
 const Booking = mongoose.model("Booking", bookingSchema);
 
 export default Booking;

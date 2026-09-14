@@ -18,9 +18,7 @@ const auth = (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    req.user = {
-      _id: decoded.userId,
-    };
+   req.user = { id: decoded.userId };
 
     next();
   } catch (error) {

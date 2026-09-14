@@ -84,7 +84,7 @@ const getAdminSummary = async () => {
   const pendingWithdrawals = (withdrawalMap.pending || 0) + (withdrawalMap.processing || 0);
   const paidWithdrawals = withdrawalMap.paid || 0;
   const usersAvailableBalance = Math.max(0, walletEarned - heldWithdrawals + reversedWithdrawals);
-  const walletWithdrawalHold = usersAvailableBalance + pendingWithdrawals;
+  const walletWithdrawalHold = pendingWithdrawals;
   const bookingWithdrawalHold = Math.max(0, providerPayouts - paidWithdrawals);
 
   return {

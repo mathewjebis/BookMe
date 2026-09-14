@@ -297,7 +297,7 @@ const confirmPaidBooking = async ({ booking, business, service, session }) => {
   });
 
   const hasConflict = conflictingBookings.some((candidate) => (
-    timesOverlap(booking.startTime, booking.endTime, candidate.startTime, candidate.endTime)
+    timeOverlap(booking.startTime, booking.endTime, candidate.startTime, candidate.endTime)
   ));
 
   if (hasConflict) {

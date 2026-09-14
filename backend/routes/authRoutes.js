@@ -1,4 +1,4 @@
-
+import rateLimit from "express-rate-limit";
 import express from "express";
 
 import {
@@ -12,14 +12,22 @@ import {
 
 import auth from "../middleware/auth.js";
 
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  message: {
+    message: "Too many OTP requests. Try again later.",
+  },
+});
+
 const router = express.Router();
 
 // Registration
 router.post("/register", registerUser);
 
-router.post("/register/request-otp", requestRegistrationOTP);
+router.post("/register/request-otp", otpLimiter, requestRegistrationOTP);
 
-router.post("/register/verify-otp", verifyRegistrationOTP);
+router.post("/register/verify-otp", otpLimiter, verifyRegistrationOTP);
 
 // Login
 router.post("/login", loginUser);

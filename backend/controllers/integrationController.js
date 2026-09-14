@@ -6,7 +6,7 @@ export const getGoogleConnectUrl = async (req, res) => {
   if (
     !process.env.GOOGLE_CLIENT_ID ||
     !process.env.GOOGLE_CLIENT_SECRET ||
-    !process.env.GOOGLE_CLIENT_REDIRECT_URI
+    !process.env.GOOGLE_CLIENT_URI
   ) {
     return res.status(503).json({
       message: "Google Calendar is not configured yet",

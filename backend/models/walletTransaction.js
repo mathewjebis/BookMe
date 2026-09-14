@@ -44,6 +44,10 @@ const walletTransactionSchema = new mongoose.Schema(
       default: "completed",
       trim: true,
     },
+    description: {
+  type: String,
+  default: ""
+},
   },
   { timestamps: true },
 );

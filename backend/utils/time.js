@@ -18,6 +18,12 @@ export const isValidTimeRange = (startTime, endTime) => {
   return timeToMinutes(startTime) < timeToMinutes(endTime);
 };
 
-export const getDayOfWeek = (date) => {
-  return new Date(`${date}T00:00:00`).getDay();
+export const getDayOfWeek = (date, timezone = "Asia/Kolkata") => {
+  const localDate = new Date(
+    new Date(`${date}T00:00:00`).toLocaleString("en-US", {
+      timeZone: timezone,
+    }),
+  );
+
+  return localDate.getDay();
 };
