@@ -1,13 +1,29 @@
-import React from 'react'
+import { Navigate, Route, Routes } from "react-router-dom";
+import AdminDashboardPage from "./admin/AdminDashboard";
+import AdminLoginPage from "./admin/AdminLoginPage";
 
-const App = () => {
+const AdminProctedRoute = ({ children }) => {
+  const hasAdminToken = Boolean(localStorage.getItem("adminToken"));
+
+  if (!hasAdminToken) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return children;
+};
+
+export default function App() {
   return (
-    <div>
-       <h1 class="text-3xl font-bold underline">
-    Hello world!
-  </h1>
-    </div>
-  )
+    <Routes>
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminProctedRoute>
+            <AdminDashboardPage />
+          </AdminProctedRoute>
+        }
+      />
+    </Routes>
+  );
 }
-
-export default App
