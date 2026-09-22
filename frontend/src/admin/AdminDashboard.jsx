@@ -294,7 +294,7 @@ export default function AdminDashboardPage() {
 
                 return (
                   <div key={withdrawal._id} className={s.withdrawalItem}>
-                    <div className={s.withdrawalProviderHeader}>
+                    <div className={s.withdrawalItemHeader}>
                       <p className={s.withdrawalProviderName}>
                         {withdrawal.userId?.businessName ||
                           withdrawal.userId?.name}

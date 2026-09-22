@@ -184,7 +184,7 @@ export default function AuthPage() {
               </div>
             </div>
             <div className={s.featureCard}>
-              <div className={s.featureIconWrapPAmber}>
+              <div className={s.featureIconWrapAmber}>
                 <Zap className={s.featureIconAmber} />
               </div>
               <div>

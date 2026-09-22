@@ -39,7 +39,7 @@ const getAdminSummary = async () => {
           activeProviderPayouts: {
             $sum: {
               $cond: [
-                { $in: ['$status', ['cancelled', 'payment_failed']] },
+                { $in: ['$status', ['cancelled', 'payment_failed', 'pending_payment']] },
                 0,
                 '$providerPayoutAmount',
               ],
@@ -129,7 +129,7 @@ export const loginAdmin = async (req, res) => {
     }
 
     res.json({
-      message: 'Admin logged in sucessfully',
+      message: 'Admin logged in successfully',
       token: createAdminToken(adminEmail),
       admin: { email: adminEmail },
     });

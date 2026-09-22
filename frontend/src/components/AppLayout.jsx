@@ -115,7 +115,7 @@ export default function AppLayout({ children }) {
             {/* Mobile menu button */}
             <button
               type="button"
-              className={s.mobileMenuBtn}
+              className={s.mobileMenuButton}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <span className={s.srOnly}>Open main menu</span>

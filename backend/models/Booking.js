@@ -61,6 +61,11 @@ const bookingSchema = new mongoose.Schema(
       default: "",
       index: true,
     },
+    cancellationToken: {
+      type: String,
+      default: "",
+      index: true,
+    },
     amount: {
       type: Number,
       default: 0,
@@ -112,7 +117,8 @@ const bookingSchema = new mongoose.Schema(
 );
 
 bookingSchema.index({
-  providerId: 1,
+  userId: 1,
+  date: 1,
   startTime: 1,
   endTime: 1,
 });

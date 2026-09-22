@@ -30,7 +30,7 @@ export const createBookingPayoutTransaction = async ({
   }
 };
 
-export const getWalletSummary = async (userId) => {
+export const getWalletSummary = async (userId, session = null) => {
   const [rows, withdrawalRows] = await Promise.all([
     WalletTransaction.aggregate([
       {
@@ -46,7 +46,7 @@ export const getWalletSummary = async (userId) => {
           },
         },
       },
-    ]),
+    ], session ? { session } : undefined),
 
     Withdrawal.aggregate([
       {
@@ -62,7 +62,7 @@ export const getWalletSummary = async (userId) => {
           },
         },
       },
-    ]),
+    ], session ? { session } : undefined),
   ]);
 
   const totals = rows.reduce(

@@ -158,7 +158,7 @@ export default function ServicesPage() {
     setDeleteConfirm(service);
   };
 
-  const executedDelete = async () => {
+  const executeDelete = async () => {
     if (!deleteConfirm) return;
     try {
       await deleteService(deleteConfirm._id);

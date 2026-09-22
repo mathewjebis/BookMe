@@ -379,6 +379,7 @@ export default function ProfilePage() {
                     className={s.colorPicker}
                   />
                   <input
+                    name="brandAccent"
                     type="text"
                     value={form.brandAccent.toUpperCase()}
                     onChange={handleChange}

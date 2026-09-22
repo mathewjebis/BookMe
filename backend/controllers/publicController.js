@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import Booking from '../models/Booking.js';
 import Service from '../models/Service.js';
 import User from '../models/User.js';
@@ -9,6 +10,7 @@ import { generateSlots } from '../utils/slotGenerator.js';
 import { getStripe, toStripeAmount } from '../utils/stripe.js';
 import { calculatePlatformSplit } from '../utils/money.js';
 import { timeOverlap } from '../utils/overlap.js';
+import { isValidTimeRange, timeToMinutes } from '../utils/time.js';
 import { createBookingPayoutTransaction } from '../utils/wallet.js';
 
 const getBusinessBySlug = async (slug) => {
@@ -25,6 +27,17 @@ const toPublicBusiness = (business) => ({
   brandAccent: business.brandAccent,
   timezone: business.timezone,
   googleCalendarConnected: business.googleCalendarConnected,
+});
+
+const toPublicBooking = (booking) => ({
+  id: booking._id,
+  serviceId: booking.serviceId,
+  date: booking.date,
+  startTime: booking.startTime,
+  endTime: booking.endTime,
+  status: booking.status,
+  paymentStatus: booking.paymentStatus,
+  customerCalendarUrl: booking.customerCalendarUrl,
 });
 
 const holdWindowStart = () => new Date(Date.now() - 30 * 60 * 1000);
@@ -149,6 +162,17 @@ export const createPublicBooking = async (req, res) => {
       return res.status(400).json({ message: 'All booking fields are required' });
     }
 
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ message: 'Invalid booking date' });
+    }
+
+    if (!/^\d{2}:\d{2}$/.test(startTime) || !/^\d{2}:\d{2}$/.test(endTime) ||
+        timeToMinutes(startTime) < 0 || timeToMinutes(startTime) > 1439 ||
+        timeToMinutes(endTime) < 1 || timeToMinutes(endTime) > 1440 ||
+        !isValidTimeRange(startTime, endTime)) {
+      return res.status(400).json({ message: 'Invalid booking time range' });
+    }
+
     const normalizedCustomerEmail = customerEmail.toLowerCase().trim();
 
     const business = await getBusinessBySlug(req.params.slug);
@@ -166,10 +190,19 @@ export const createPublicBooking = async (req, res) => {
       return res.status(404).json({ message: 'Service not found' });
     }
 
+    const availableSlots = await generateSlots({ userId: business._id, service, date });
+    const isAvailableSlot = availableSlots.some(
+      (slot) => slot.startTime === startTime && slot.endTime === endTime,
+    );
+
+    if (!isAvailableSlot) {
+      return res.status(409).json({ message: 'That slot is not available' });
+    }
+
     const bookings = await findActiveSlotBookings({ userId: business._id, date });
 
     const hasConflict = bookings.some((booking) => (
-      timesOverlap(startTime, endTime, booking.startTime, booking.endTime)
+      timeOverlap(startTime, endTime, booking.startTime, booking.endTime)
     ));
 
     if (hasConflict) {
@@ -220,6 +253,7 @@ export const createPublicBooking = async (req, res) => {
       paymentStatus: amount > 0 ? 'pending' : 'not_required',
       status: amount > 0 ? 'pending_payment' : 'confirmed',
       customerCalendarUrl,
+      cancellationToken: crypto.randomBytes(32).toString('hex'),
     });
 
     if (amount === 0) {
@@ -267,7 +301,7 @@ export const createPublicBooking = async (req, res) => {
         bookingId: String(booking._id),
       },
       success_url: `${clientUrl}/booking/success?session_id={CHECKOUT_SESSION_ID}&slug=${business.slug}`,
-      cancel_url: `${clientUrl}/booking/cancelled?booking_id=${booking._id}&slug=${business.slug}`,
+      cancel_url: `${clientUrl}/booking/cancelled?booking_id=${booking._id}&token=${booking.cancellationToken}&slug=${business.slug}`,
     });
 
     booking.stripeSessionId = session.id;
@@ -382,7 +416,7 @@ export const getBookingStatus = async (req, res) => {
       booking = await Booking.findById(booking._id).populate('serviceId', 'name duration price');
     }
 
-    res.json({ booking });
+    res.json({ booking: toPublicBooking(booking) });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -390,13 +424,17 @@ export const getBookingStatus = async (req, res) => {
 
 export const cancelPublicBookingPayment = async (req, res) => {
   try {
-    const { booking_id: bookingId } = req.body;
+    const { booking_id: bookingId, token } = req.body;
 
-    if (!bookingId) {
-      return res.status(400).json({ message: 'Booking identifier is required' });
+    if (!bookingId || !token) {
+      return res.status(400).json({ message: 'Booking identifier and cancellation token are required' });
     }
 
-    const booking = await Booking.findOne({ _id: bookingId, status: 'pending_payment' });
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      cancellationToken: token,
+      status: 'pending_payment',
+    });
     if (!booking) {
       return res.json({ message: 'No pending booking to cancel' });
     }

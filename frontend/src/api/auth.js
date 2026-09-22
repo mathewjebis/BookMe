@@ -7,4 +7,4 @@ export const verifyRegistrationOtp = (data) =>
   client.post("/auth/register/verify-otp", data);
 export const login = (data) => client.post("/auth/login", data);
 export const getMe = () => client.get("/auth/me");
-export const updateProfile = (data) => client.put("/auth/profile", data);
+export const updateProfile = (data) => client.patch("/auth/profile", data);

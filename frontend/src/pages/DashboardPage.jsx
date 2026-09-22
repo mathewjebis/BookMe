@@ -99,8 +99,17 @@ const parseBookingDateValue = (value) => {
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 };
 
-const getBookingDate = (booking, fallbackDate) =>
-  parseBookingDateValue(booking.date || booking.createdAt) || fallbackDate;
+const getBookingDate = (booking, fallbackDate) => {
+  const dateValue = parseBookingDateValue(booking.date || booking.createdAt);
+  if (!dateValue) return fallbackDate;
+
+  if (booking.date && booking.startTime && /^\d{2}:\d{2}$/.test(booking.startTime)) {
+    const [hours, minutes] = booking.startTime.split(":").map(Number);
+    dateValue.setHours(hours, minutes, 0, 0);
+  }
+
+  return dateValue;
+};
 
 const buildGmailShareUrl = (publicLink) => {
   const params = new URLSearchParams({

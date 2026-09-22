@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import jwt from "jsonwebtoken";
 import { buildCustomerCalendarUrl } from "./calendarLink.js";
 
 const getOAuthClient = () => {
@@ -16,7 +17,7 @@ export const getGoogleAuthUrl = (userId) => {
     access_type: "offline",
     prompt: "consent",
     scope: ["https://www.googleapis.com/auth/calendar.events"],
-    state: String(userId),
+    state: jwt.sign({ userId: String(userId) }, process.env.JWT_SECRET, { expiresIn: "10m" }),
   });
 };
 

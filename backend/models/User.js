@@ -73,6 +73,11 @@ const userSchema = new mongoose.Schema(
       default: 'primary',
     },
 
+    walletVersion: {
+      type: Number,
+      default: 0,
+    },
+
     payoutDetails: {
       accountHolderName: {
         type: String,

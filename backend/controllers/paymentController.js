@@ -91,70 +91,74 @@ export const updatePayoutDetails = async (req, res) => {
  * @param {Object} res - Express response object.
  */
 export const requestWithdrawal = async (req, res) => {
+  const session = await mongoose.startSession();
+
   try {
     const userId = toObjectId(req.user.id);
     const amount = Math.round(Number(req.body.amount || 0));
-    const user = await User.findById(userId).select('payoutDetails');
 
-    if (!user?.payoutDetails?.isComplete) {
-      return res.status(400).json({ message: 'Add payout details before requesting a withdrawal' });
-    }
-const session = await mongoose.startSession();
-    const summary = await getWalletSummary(userId);
-    if (!amount || amount < 100) {
+    if (!Number.isSafeInteger(amount) || amount < 100) {
       return res.status(400).json({ message: 'Withdrawal amount must be at least 100 paise' });
     }
 
+    const user = await User.findById(userId).select('payoutDetails');
+    if (!user?.payoutDetails?.isComplete) {
+      return res.status(400).json({ message: 'Add payout details before requesting a withdrawal' });
+    }
+
+    session.startTransaction();
+
+    // Serialize withdrawals for this user so concurrent requests cannot both
+    // spend the same available wallet balance.
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $inc: { walletVersion: 1 } },
+      { session, new: true },
+    );
+
+    const summary = await getWalletSummary(userId, session);
     if (amount > summary.available) {
+      await session.abortTransaction();
       return res.status(400).json({ message: 'Withdrawal amount exceeds available balance' });
     }
 
-   
+    const withdrawal = await Withdrawal.create(
+      [
+        {
+          userId,
+          amount,
+          payoutSnapshot: user.payoutDetails,
+        },
+      ],
+      { session },
+    );
 
-try {
-  session.startTransaction();
+    await WalletTransaction.create(
+      [
+        {
+          userId,
+          withdrawalId: withdrawal[0]._id,
+          type: 'withdrawal_hold',
+          amount,
+          status: 'pending',
+          description: 'Withdrawal requested',
+        },
+      ],
+      { session },
+    );
 
-  const withdrawal = await Withdrawal.create(
-    [
-      {
-        userId,
-        amount,
-        payoutSnapshot: user.payoutDetails,
-      },
-    ],
-    { session }
-  );
+    await session.commitTransaction();
 
-  await WalletTransaction.create(
-    [
-      {
-        userId,
-        withdrawalId: withdrawal[0]._id,
-        type: 'withdrawal_hold',
-        amount,
-        status: 'pending',
-        description: 'Withdrawal requested',
-      },
-    ],
-    { session }
-  );
-
-  await session.commitTransaction();
-  session.endSession();
-
-  res.status(201).json({
-    message: 'Withdrawal requested',
-    withdrawal: withdrawal[0],
-  });
-
-} catch (error) {
-  await session.abortTransaction();
-  session.endSession();
-  throw error;
-}
-
-
+    return res.status(201).json({
+      message: 'Withdrawal requested',
+      withdrawal: withdrawal[0],
+    });
   } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     res.status(500).json({ message: 'Server error', error: error.message });
+  } finally {
+    await session.endSession();
   }
 };

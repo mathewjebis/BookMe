@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 
 import { getGoogleAuthUrl, getGoogleTokens } from "../utils/googleCalendar.js";
 
@@ -36,7 +37,23 @@ export const handleGoogleCallback = async (req, res) => {
       );
     }
 
-    await User.findByIdAndUpdate(state, {
+    let statePayload;
+    try {
+      statePayload = jwt.verify(state, process.env.JWT_SECRET);
+    } catch {
+      return res.redirect(`${clientUrl}/profile?calendar=failed`);
+    }
+
+    if (!statePayload?.userId) {
+      return res.redirect(`${clientUrl}/profile?calendar=failed`);
+    }
+
+    const user = await User.findById(statePayload.userId).select('_id');
+    if (!user) {
+      return res.redirect(`${clientUrl}/profile?calendar=failed`);
+    }
+
+    await User.findByIdAndUpdate(user._id, {
       googleRefreshToken: token.refresh_token,
       googleCalendarConnected: true,
       googleCalendarId: "primary",

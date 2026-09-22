@@ -71,6 +71,7 @@ export default function BookingSuccessPage() {
           <a
             href={booking.customerCalendarUrl}
             target="_blank"
+            rel="noreferrer"
             className={s.addToCalendarLink}
           >
             <Calendar className={s.calendarIcon} />
