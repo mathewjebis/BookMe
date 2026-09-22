@@ -4,6 +4,15 @@ import AdminLoginPage from "./admin/AdminLoginPage";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
+import BookingsPage from "./pages/BookingsPage";
+import BookingSuccessPage from "./pages/BookingSuccessPage";
+import BookingCancelledPage from "./pages/BookingCancelledPage";
+import AvailabilityPage from "./pages/AvailabilityPage";
+import ServicesPage from "./pages/ServicesPage";
+import PaymentsPage from "./pages/PaymentsPage";
+import PublicBookingPage from "./pages/PublicBookingPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
@@ -47,7 +56,14 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/profile" element={<ProtectedRoute><ProfilePage/></ProtectedRoute>}/>
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/login"
         element={
@@ -56,6 +72,44 @@ export default function App() {
           </PublicOnlyRoute>
         }
       />
+      <Route path="/book/:slug" element={<PublicBookingPage />} />
+      <Route path="/public/:slug" element={<PublicBookingPage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route
+        path="/payments"
+        element={
+          <ProtectedRoute>
+            <PaymentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/availability"
+        element={
+          <ProtectedRoute>
+            <AvailabilityPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services"
+        element={
+          <ProtectedRoute>
+            <ServicesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookings"
+        element={
+          <ProtectedRoute>
+            <BookingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/booking/success" element={<BookingSuccessPage />} />
+      <Route path="/booking/cancelled" element={<BookingCancelledPage />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route
         path="/admin/dashboard"

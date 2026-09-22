@@ -5,11 +5,13 @@ export const getPublicSlots = (slug, params) =>
   client.get(`/public/${slug}/slots`, { params });
 export const requestPublicBookingOtp = (slug, customerEmail) =>
   client.post(`/public/${slug}/request-otp`, { customerEmail });
-export const verifyPublicbookingOtp = (slug, data) =>
+export const verifyPublicBookingOtp = (slug, data) =>
   client.post(`/public/${slug}/verify-otp`, data);
 export const createPublicBooking = (slug, data) =>
   client.post(`/public/${slug}/book`, data);
 export const getPublicBookingStatus = (params) =>
   client.get("/public/booking/status", { params });
-export const cancelPublicBookingPayments = (bookingId) =>
-  client.get("/public/booking/cancel-payment", { booking_id: bookingId });
+export const cancelPublicBookingPayment = (bookingId) =>
+  client.get("/public/booking/cancel-payment", {
+    params: { booking_id: bookingId },
+  });

@@ -1,16 +1,11 @@
-
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
-import { requestEmailOtp, verifyEmailOtp } from '../utils/emailOtp.js';
-import slugify from '../utils/slug.js';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import { requestEmailOtp, verifyEmailOtp } from "../utils/emailOtp.js";
+import slugify from "../utils/slug.js";
 
 const createToken = (userId) => {
-  return jwt.sign(
-    { userId },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
 const toUserResponse = (user) => ({
@@ -44,7 +39,7 @@ export const registerUser = async (req, res) => {
     // Validate required fields
     if (!name || !email || !password) {
       return res.status(400).json({
-        message: 'Name, email, and password are required',
+        message: "Name, email, and password are required",
       });
     }
 
@@ -58,26 +53,26 @@ export const registerUser = async (req, res) => {
 
     if (existingUser) {
       return res.status(400).json({
-        message: 'Email already exists',
+        message: "Email already exists",
       });
     }
 
     // Verify registration OTP
     const otpResult = await verifyEmailOtp({
       email: normalizedEmail,
-      purpose: 'registration',
+      purpose: "registration",
       code: emailOtp,
       consume: true,
     });
 
     if (!otpResult.verified) {
       return res.status(400).json({
-        message: otpResult.reason || 'Email verification is required',
+        message: otpResult.reason || "Email verification is required",
       });
     }
 
     // Generate unique slug
-    const baseSlug = slugify(businessName || name) || 'business';
+    const baseSlug = slugify(businessName || name) || "business";
 
     let finalSlug = baseSlug;
     let counter = 1;
@@ -96,24 +91,24 @@ export const registerUser = async (req, res) => {
       email: normalizedEmail,
       password: hashPassword,
       slug: finalSlug,
-      businessName: businessName || '',
-      businessDescription: businessDescription || '',
-      timezone: timezone || 'Asia/Kolkata',
+      businessName: businessName || "",
+      businessDescription: businessDescription || "",
+      timezone: timezone || "Asia/Kolkata",
     });
 
     // Generate JWT
     const token = createToken(user._id);
 
     return res.status(201).json({
-      message: 'Registered Successfully',
+      message: "Registered Successfully",
       token,
       user: toUserResponse(user),
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error("Registration error:", error);
 
     return res.status(500).json({
-      message: 'Server error',
+      message: "Server error",
       error: error.message,
     });
   }
@@ -158,7 +153,6 @@ export const requestRegistrationOTP = async (req, res) => {
     });
   }
 };
-
 
 export const verifyRegistrationOTP = async (req, res) => {
   try {
@@ -208,7 +202,6 @@ export const verifyRegistrationOTP = async (req, res) => {
   }
 };
 
-
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -231,10 +224,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
@@ -259,12 +249,9 @@ export const loginUser = async (req, res) => {
   }
 };
 
-
-
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
-      .select("-password");
+    const user = await User.findById(req.user.id).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -287,20 +274,27 @@ export const getMe = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { businessName, businessDescription, timezone, brandTheme, brandAccent } = req.body;
+    const {
+      businessName,
+      businessDescription,
+      timezone,
+      brandTheme,
+      brandAccent,
+    } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     if (businessName !== undefined) user.businessName = businessName;
-    if (businessDescription !== undefined) user.businessDescription = businessDescription;
+    if (businessDescription !== undefined)
+      user.businessDescription = businessDescription;
     if (timezone !== undefined) user.timezone = timezone;
     if (brandTheme !== undefined) user.brandTheme = brandTheme;
     if (brandAccent !== undefined) user.brandAccent = brandAccent;
 
-    const baseSlug = slugify(user.businessName || user.name) || 'business';
+    const baseSlug = slugify(user.businessName || user.name) || "business";
     let finalSlug = baseSlug;
     let counter = 1;
 
@@ -314,10 +308,10 @@ export const updateProfile = async (req, res) => {
     await user.save();
 
     res.json({
-      message: 'Profile updated successfully',
+      message: "Profile updated successfully",
       user: toUserResponse(user),
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
